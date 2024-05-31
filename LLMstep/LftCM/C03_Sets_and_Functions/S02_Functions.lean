@@ -236,7 +236,16 @@ The proof `fun x ↦ id` succinctly captures this reasoning. It shows that any e
 
 
 example : f '' s ∩ v = f '' (s ∩ f ⁻¹' v) := by
-  sorry
+  ext y
+  constructor
+  · rintro h
+    simp_all
+    rcases h with ⟨⟨x, hx, rfl⟩, h'⟩
+    exact ⟨x, ⟨hx, h'⟩, rfl⟩
+  · rintro ⟨x, ⟨hx, h'⟩, rfl⟩
+    exact ⟨⟨x, hx, rfl⟩, h'⟩
+
+
 
 example : f '' (s ∩ f ⁻¹' u) ⊆ f '' s ∩ u := by
   sorry
@@ -367,17 +376,17 @@ example : InjOn sqrt { x | x ≥ 0 } := by
   intro x xpos y ypos
   intro e
   calc
-    x = sqrt (x ^ 2) := by rw [sqrt_sq xpos]
+    x = sqrt (x ^ 2) := by simp_all
     _ = sqrt (y ^ 2) := by simp_all
-    _ = y := by rw [sqrt_sq ypos]
+    _ = y := by simp_all
 
 example : InjOn (fun x ↦ x ^ 2) { x : ℝ | x ≥ 0 } := by
   intro x xpos y ypos
   intro e
   calc
-    x = sqrt (x ^ 2) := by rw [sqrt_sq xpos]
+    x = sqrt (x ^ 2) := by simp_all
     _ = sqrt (y ^ 2) := by simp_all
-    _ = y := by rw [sqrt_sq ypos]
+    _ = y := by simp_all
 
 example : sqrt '' { x | x ≥ 0 } = { y | y ≥ 0 } := by
   ext y; constructor
@@ -484,8 +493,22 @@ variable (f : α → β)
 
 open Function
 
-example : Injective f ↔ LeftInverse (inverse f) f :=
-  sorry
+/- see [proof](https://en.wikipedia.org/wiki/Inverse_function#Left_and_right_inverses)-/
+example : Injective f ↔ LeftInverse (inverse f) f := by
+  constructor
+  · intro h x
+    -- intro x  (I shortened the proof by merging intro x with intro h)
+    simp only [inverse]
+    split_ifs with h1
+    · apply h
+      exact Classical.choose_spec h1
+    · simp_all
+  · intro h x₁ x₂ h'
+    -- intro x₁ x₂ (I shortened the proof by merging intro x₁ x₂ with intro h)
+    -- intro h'
+    rw [← h x₁, ← h x₂]
+    congr
+
 
 example : Surjective f ↔ RightInverse (inverse f) f :=
   sorry
@@ -501,6 +524,20 @@ section
 variable {α : Type*}
 open Function
 
+
+/-**Theorem (Cantor):** For any function \( f: \alpha \to \text{Set} \, \alpha \), \( f \) is not surjective.
+
+*Proof Outline*
+
+1. *Assume for contradiction:* Assume that \( f \) is surjective.
+
+2. *Define the set \( S \):* Let \( S \) be the set of all elements \( i \) in \( \alpha \) such that \( i \notin f(i) \).
+
+3. *Use surjectivity:* Since \( f \) is surjective, there exists some \( j \in \alpha \) such that \( f(j) = S \).
+
+4. *Derive a contradiction:* Show that \( j \in S \) leads to a contradiction.
+
+-/
 theorem Cantor : ∀ f : α → Set α, ¬Surjective f := by
   intro f surjf
   let S := { i | i ∉ f i }
@@ -509,10 +546,10 @@ theorem Cantor : ∀ f : α → Set α, ¬Surjective f := by
     intro h'
     have : j ∉ f j := by rwa [h] at h'
     contradiction
-  have h₂ : j ∈ S
-  sorry
-  have h₃ : j ∉ S
-  sorry
+  have h₂ : j ∈ S := by
+    exact h₁
+  have h₃ : j ∉ S := by
+    rwa [← h]
   contradiction
 
 -- COMMENTS: TODO: improve this

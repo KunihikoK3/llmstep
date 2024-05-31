@@ -1,15 +1,16 @@
-import Mathlib.Data.Set.Lattice
-import Mathlib.Data.Set.Function
-import LftCM.Common
+import Mathlib
+-- import LeanCopilot
+-- import Lean
+import LLMstep
 
 open Set
 open Function
-
+-- [https://www.youtube.com/watch?v=eOhZzL4Ui8k] for a nice explanation of the Schroeder-Bernstein theorem
 -- .. _the_schroeder_bernstein_theorem:
--- 
+--
 -- The Schröder-Bernstein Theorem
 -- ------------------------------
--- 
+--
 -- We close this chapter with an elementary but nontrivial theorem of set theory.
 -- Let :math:`\alpha` and :math:`\beta` be sets.
 -- (In our formalization, they will actually be types.)
@@ -23,45 +24,45 @@ open Function
 -- case where :math:`\alpha` and :math:`\beta` are infinite.
 -- This was eventually established by Dedekind, Schröder, and Bernstein
 -- independently.
--- 
+--
 -- Our formalization will introduce some new methods that we will explain
 -- in greater detail in chapters to come.
 -- Don't worry if they go by too quickly here.
 -- Our goal is to show you that you already have the skills to contribute
 -- to the formal proof of a real mathematical result.
--- 
+--
 -- To understand the idea behind the proof, consider the image of the map
 -- :math:`g` in :math:`\alpha`.
 -- On that image, the inverse of :math:`g` is defined and is a bijection
 -- with :math:`\beta`.
--- 
+--
 -- .. image:: /figures/schroeder_bernstein1.*
 --    :height: 150 px
 --    :alt: the Schröder Bernstein theorem
 --    :align: center
--- 
+--
 -- The problem is that the bijection does not include the shaded region
 -- in the diagram, which is nonempty if :math:`g` is not surjective.
 -- Alternatively, we can use :math:`f` to map all of
 -- :math:`\alpha` to :math:`\beta`,
 -- but in that case the problem is that if :math:`f` is not surjective,
 -- it will miss some elements of :math:`\beta`.
--- 
+--
 -- .. image:: /figures/schroeder_bernstein2.*
 --    :height: 150 px
 --    :alt: the Schröder Bernstein theorem
 --    :align: center
--- 
+--
 -- But now consider the composition :math:`g \circ f` from :math:`\alpha` to
 -- itself. Because the composition is injective, it forms a bijection between
 -- :math:`\alpha` and its image, yielding a scaled-down copy of :math:`\alpha`
 -- inside itself.
--- 
+--
 -- .. image:: /figures/schroeder_bernstein3.*
 --    :height: 150 px
 --    :alt: the Schröder Bernstein theorem
 --    :align: center
--- 
+--
 -- This composition maps the inner shaded ring to yet another such
 -- set, which we can think of as an even smaller concentric shaded ring,
 -- and so on.
@@ -73,18 +74,18 @@ open Function
 -- we have a bijection of :math:`\alpha` with the image of :math:`g`.
 -- Composing with :math:`g^{-1}`, this yields the desired
 -- bijection between :math:`\alpha` and :math:`\beta`.
--- 
+--
 -- We can describe this bijection more simply.
 -- Let :math:`A` be the union of the sequence of shaded regions, and
 -- define :math:`h : \alpha \to \beta` as follows:
--- 
+--
 -- .. math::
--- 
+--
 --   h(x) = \begin{cases}
 --     f(x) & \text{if $x \in A$} \\
 --     g^{-1}(x) & \text{otherwise.}
 --   \end{cases}
--- 
+--
 -- In other words, we use :math:`f` on the shaded parts,
 -- and we use the inverse of :math:`g` everywhere else.
 -- The resulting map :math:`h` is injective
@@ -100,7 +101,7 @@ open Function
 -- If :math:`g(y)` is not in the shaded region,
 -- then by the definition of :math:`h`, we have :math:`h(g(y))= y`.
 -- Either way, :math:`y` is in the image of :math:`h`.
--- 
+--
 -- This argument should sound plausible, but the details are delicate.
 -- Formalizing the proof will not only improve our confidence in the
 -- result, but also help us understand it better.
@@ -123,10 +124,10 @@ variable {α β : Type*} [Nonempty β]
 -- and returns an arbitrary element of ``β`` otherwise.
 -- The function ``invFun g`` is always a left inverse if ``g`` is injective
 -- and a right inverse if ``g`` is surjective.
--- 
--- 
+--
+--
 -- We define the set corresponding to the union of the shaded regions as follows.
--- 
+--
 section
 variable (f : α → β) (g : β → α)
 
@@ -140,12 +141,12 @@ def sbSet :=
 -- The definition ``sb_aux`` is an example of a *recursive definition*,
 -- which we will explain in the next chapter.
 -- It defines a sequence of sets
--- 
+--
 -- .. math::
--- 
+--
 --   S_0 &= \alpha ∖ g(\beta) \\
 --   S_{n+1} &= g(f(S_n)).
--- 
+--
 -- The definition ``sb_set`` corresponds to the set
 -- :math:`A = \bigcup_{n \in \mathbb{N}} S_n` in our proof sketch.
 -- The function :math:`h` described above is now defined as follows:
@@ -163,7 +164,7 @@ def sbFun (x : α) : β :=
 -- (By the injectivity of :math:`g`, this :math:`y` is unique,
 -- but next theorem says only that ``inv_fun g x`` returns some ``y``
 -- such that ``g y = x``.)
--- 
+--
 -- Step through the proof below, make sure you understand what is going on,
 -- and fill in the remaining parts.
 -- You will need to use ``inv_fun_eq`` at the end.
@@ -194,12 +195,12 @@ theorem sb_right_inv {x : α} (hx : x ∉ sbSet f g) : g (invFun g x) = x := by
 -- The injectivity of :math:`f` then implies :math:`x_1 = x_2`.
 -- The symmetric argument shows that if :math:`x_2` is in :math:`A`,
 -- then so is :math:`x_1`, which again implies :math:`x_1 = x_2`.
--- 
+--
 -- The only remaining possibility is that neither :math:`x_1` nor :math:`x_2`
 -- is in :math:`A`. In that case, we have
 -- :math:`g^{-1}(x_1) = h(x_1) = h(x_2) = g^{-1}(x_2)`.
 -- Applying :math:`g` to both sides yields :math:`x_1 = x_2`.
--- 
+--
 -- Once again, we encourage you to step through the following proof
 -- to see how the argument plays out in Lean.
 -- See if you can finish off the proof using ``sb_right_inv``.
@@ -240,12 +241,12 @@ theorem sb_injective (hf : Injective f) (hg : Injective g) : Injective (sbFun f 
 -- use ``A_def`` and ``h_def`` explicitly.
 -- So the definitions bring a tradeoff: they can make expressions shorter
 -- and more readable, but they sometimes require us to do more work.
--- 
+--
 -- A more interesting tactic is the ``wlog`` tactic, which encapsulates
 -- the symmetry argument in the informal proof above.
 -- We will not dwell on it now, but notice that it does exactly what we want.
 -- If you hover over the tactic you can take a look at its documentation.
--- 
+--
 -- The argument for surjectivity is even easier.
 -- Given :math:`y` in :math:`\beta`,
 -- we consider two cases, depending on whether :math:`g(y)` is in :math:`A`.
@@ -257,7 +258,7 @@ theorem sb_injective (hf : Injective f) (hg : Injective g) : Injective (sbFun f 
 -- By the injectivity of :math:`g`, we have :math:`f(x) = y`.
 -- In the case where :math:`g(y)` is in the complement of :math:`A`,
 -- we immediately have :math:`h(g(y))= y`, and we are done.
--- 
+--
 -- Once again, we encourage you to step through the proof and fill in
 -- the missing parts.
 -- The tactic ``cases n with n`` splits on the cases ``g y ∈ sb_aux f g 0``

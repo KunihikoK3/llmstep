@@ -29,12 +29,8 @@ that do not use llmstep.
 -/
 
 example (f : ℕ → ℕ) : Monotone f → ∀ n, f n ≤ f (n + 1) := by
-  -- llmstep ""
   intro h n
-  -- llmstep "apply"
-  apply h
-  -- llmstep "apply"
-  apply Nat.le_succ
+  exact h (Nat.le_succ n)
 
 
 -- Proving the example above in a different way.
@@ -43,6 +39,9 @@ example (f : ℕ → ℕ) : Monotone f → ∀ n, f n ≤ f (n + 1) := by
   -- llmstep "exact"
   exact h (Nat.le_succ _)
 
+
+example {α : Type _} (r s t : Set α) : r ⊆ s → s ⊆ t → r ⊆ t := by
+  exact Set.Subset.trans
 
 example {α : Type _} (r s t : Set α) : r ⊆ s → s ⊆ t → r ⊆ t := by
   intro hrs hst x hxr
@@ -68,6 +67,12 @@ example {X Y : Type _} [MetricSpace X] [MetricSpace Y] {f : X → Y} (hf : Conti
     -- llmstep ""
     exact continuous_dist.comp (hf.prod_map hf)
 
+
+-- Example from ProofNet (Rudin)
+theorem exercise_1_18ba : ¬ ∀ (x : ℝ), ∃ (y : ℝ), y ≠ 0 ∧ x * y = 0 := by
+  push_neg
+  use 1
+  simp [ne_of_gt]
 
 -- Example from ProofNet (Rudin)
 theorem exercise_1_18b : ¬ ∀ (x : ℝ), ∃ (y : ℝ), y ≠ 0 ∧ x * y = 0 := by

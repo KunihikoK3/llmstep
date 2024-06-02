@@ -125,6 +125,23 @@ variable {α β : Type*} [Nonempty β]
 -- The function ``invFun g`` is always a left inverse if ``g`` is injective
 -- and a right inverse if ``g`` is surjective.
 --
+/-To provide an example of a *left inverse* of an injective function that is *not* surjective, let's consider the following functions:
+
+Define the function \( f: \mathbb{R} \to \mathbb{R} \) by \( f(x) = e^x \).
+
+We need to find a function \( g: \mathbb{R} \to \mathbb{R} \) such that \( g \) is a left inverse of \( f \). This means \( g(f(x)) = x \) for all \( x \in \mathbb{R} \). Thus, we define \( g: \mathbb{R} \to \mathbb{R} \) by: \[ g(y) = \ln(y) \]
+
+Define the function \( f: \mathbb{R} \to \mathbb{R} \) by \( f(x) = x^2 \).
+
+This function is not injective because \( f(a) = f(-a) \) for any \( a \in \mathbb{R} \).
+
+We need to find a function \( g: \mathbb{R} \to \mathbb{R} \) such that \( f(g(x)) = x \) for all \( x \in \mathbb{R} \).
+
+Let's define \( g: \mathbb{R} \to \mathbb{R} \) by \( g(y) = \sqrt{y} \). This function takes the positive square root of \( y \). Thus, \( g(y) = \sqrt{y} \) is a *right inverse* of \( f(x) = x^2 \).
+
+-/
+
+
 --
 -- We define the set corresponding to the union of the shaded regions as follows.
 --
@@ -138,6 +155,8 @@ def sbAux : ℕ → Set α
 /-sbAux n is the same as C_n defined in  [https://www.youtube.com/watch?v=eOhZzL4Ui8k]-/
 def sbSet :=
   ⋃ n, sbAux f g n
+
+-- sbSet is the union of the C_n's
 
 -- The definition ``sb_aux`` is an example of a *recursive definition*,
 -- which we will explain in the next chapter.
@@ -153,6 +172,8 @@ def sbSet :=
 -- The function :math:`h` described above is now defined as follows:
 def sbFun (x : α) : β :=
   if x ∈ sbSet f g then f x else invFun g x
+
+-- The function ``sb_fun`` is the function :math:`h` from the video
 
 -- We will need the fact that our definition of :math:`g^{-1}` is a
 -- right inverse on the complement of :math:`A`,
@@ -217,24 +238,49 @@ theorem sb_injective (hf : Injective f) (hg : Injective g) : Injective (sbFun f 
   show x₁ = x₂
   simp only [h_def, sbFun, ← A_def] at hxeq
   by_cases xA : x₁ ∈ A ∨ x₂ ∈ A
+  /-Splits into two cases:
+    **Case 1**: Either \( x_1 \in A \) or \( x_2 \in A \).
+    **Case 2**: Neither \( x_1 \in A \) nor \( x_2 \in A \).
+  -/
   · wlog x₁A : x₁ ∈ A generalizing x₁ x₂ hxeq xA
+    -- This means that, to avoid redundant work, we can assume \( x₁ \in A \) and prove the result. If the assumption doesn't hold, we can handle the case symmetrically by assuming \( x₂ \in A \).
     · symm
+      -- `symm` is used to handle the symmetric case. If \( x₁ \in A \) is not true, it will handle the case where \( x₂ \in A \).
       apply this hxeq.symm xA.symm (xA.resolve_left x₁A)
+      /-
+     `hxeq.symm` uses the symmetry of the equality \( h(x₁) = h(x₂) \) to switch \( x₁ \) and \( x₂ \).
+     `xA.symm` switches the roles of \( x₁ \) and \( x₂ \) in the assumption \( x₁ \in A \) or \( x₂ \in A \).
+     `xA.resolve_left x₁A` resolves the disjunction \( x₁ \in A \) or \( x₂ \in A \), given that \( x₁ \not\in A \). This deduces \( x₂ \in A \).
+      -/
     have x₂A : x₂ ∈ A := by
       apply not_imp_self.mp
+      /- ### Goal: Initially, our goal is to prove \( x_2 \in A \).
+         ### Applying `not_imp_self.mp`:
+          The tactic `apply not_imp_self.mp` changes the goal from \( x_2 \in A \) to \( \neg (x_2 \in A) \rightarrow (x_2 \in A) \).
+           ### Introducing the Assumption:
+         We then introduce the assumption \( x_2 \not\in A \) and aim to derive a contradiction from this assumption.-/
       intro (x₂nA : x₂ ∉ A)
       rw [if_pos x₁A, if_neg x₂nA] at hxeq
       rw [A_def, sbSet, mem_iUnion] at x₁A
       have x₂eq : x₂ = g (f x₁) := by
-        sorry
+        simp [hxeq, sb_right_inv f g x₂nA]
       rcases x₁A with ⟨n, hn⟩
       rw [A_def, sbSet, mem_iUnion]
       use n + 1
       simp [sbAux]
       exact ⟨x₁, hn, x₂eq.symm⟩
-    sorry
+    -- rename_i inst
+    simp_all only [ite_true, or_self]
+    apply hf
+    simp_all
   push_neg  at xA
-  sorry
+  rw [if_neg xA.1, if_neg xA.2] at hxeq
+  rw [← sb_right_inv f g xA.1, hxeq, sb_right_inv f g xA.2]
+
+
+
+
+
 
 -- The proof introduces some new tactics.
 -- To start with, notice the ``set`` tactic, which introduces abbreviations

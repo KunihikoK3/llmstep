@@ -112,7 +112,7 @@ open Classical
 variable {α β : Type*} [Nonempty β]
 
 -- The annotation ``[Nonempty β]`` specifies that ``β`` is nonempty.
--- We use it because the Mathlib primitive that we will use to
+-- We use it because the Mathlib primitiv that we will use to
 -- construct :math:`g^{-1}` requires it.
 -- The case of the theorem where :math:`\beta` is empty is trivial,
 -- and even though it would not be hard to generalize the formalization to cover
@@ -135,6 +135,7 @@ def sbAux : ℕ → Set α
   | 0 => univ \ g '' univ
   | n + 1 => g '' (f '' sbAux n)
 
+/-sbAux n is the same as C_n defined in  [https://www.youtube.com/watch?v=eOhZzL4Ui8k]-/
 def sbSet :=
   ⋃ n, sbAux f g n
 
@@ -171,15 +172,19 @@ def sbFun (x : α) : β :=
 -- Notice that rewriting with ``sb_aux`` here replaces ``sb_aux f g 0``
 -- with the right-hand side of the corresponding defining equation.
 theorem sb_right_inv {x : α} (hx : x ∉ sbSet f g) : g (invFun g x) = x := by
-  have : x ∈ g '' univ := by
+  have h1 : x ∈ g '' univ := by
     contrapose! hx
     rw [sbSet, mem_iUnion]
     use 0
     rw [sbAux, mem_diff]
-    sorry
-  have : ∃ y, g y = x := by
-    sorry
-  sorry
+    constructor
+    · simp
+    · exact hx
+  have h2: ∃ y, g y = x := by
+    simpa using h1
+  exact invFun_eq h2
+
+
 
 -- We now turn to the proof that :math:`h` is injective.
 -- Informally, the proof goes as follows.

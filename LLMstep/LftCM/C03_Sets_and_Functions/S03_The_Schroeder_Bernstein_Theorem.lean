@@ -333,7 +333,32 @@ theorem sb_surjective (hf : Injective f) (hg : Injective g) : Surjective (sbFun 
       exact ⟨n, xmem⟩
     simp only [h_def, sbFun, if_pos this]
     exact hg hx
-  sorry
+  -- rw [A_def, sbSet, mem_iUnion] at gyA
+  -- simp [sbAux] at gyA
+  -- by_cases hy : g y ∈ A
+  use g y
+  -- simp_all
+  simp only [h_def, sbFun, if_neg gyA]
+  apply leftInverse_invFun hg
+  -- rw [h_def,sbFun,if_neg gyA]
+
+  -- exact sb_right_inv f g y
+  --simp only [h_def, sbFun, if_neg gyA]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end
 
